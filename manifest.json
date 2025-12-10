@@ -1,0 +1,22 @@
+{
+  "name": "Skincare Routine",
+  "short_name": "Skincare",
+  "description": "Your personalized AM/PM skincare routine tracker",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F8F4ED",
+  "theme_color": "#F8F4ED",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

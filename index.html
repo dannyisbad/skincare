@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#F8F4ED">
+  <title>Skincare</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-title" content="Skincare">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F8F4ED;
+      --surface: #FFFFFF;
+      --text: #2D2926;
+      --text-muted: #6B5E54;
+      --accent: #C4988D;
+      --accent-gold: #B8977E;
+      --optional: #8B9A7D;
+      --warning: #C17A5E;
+      --warning-bg: rgba(193, 122, 94, 0.1);
+      --shadow: rgba(45, 41, 38, 0.06);
+      --shadow-md: rgba(45, 41, 38, 0.1);
+
+      /* Consistent radii */
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
+      --radius-full: 50px;
+
+      /* Type scale */
+      --text-xs: 11px;
+      --text-sm: 13px;
+      --text-base: 15px;
+      --text-lg: 18px;
+      --text-xl: 22px;
+
+      /* Apple-like easing */
+      --ease-out: cubic-bezier(0.25, 0.1, 0.25, 1);
+      --ease-spring: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100dvh;
+      padding: 16px 20px;
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Subtle paper texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.025;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* ========== HEADER ========== */
+    .header {
+      flex-shrink: 0;
+      animation: fadeDown 400ms var(--ease-out);
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ========== TOGGLE ========== */
+    .toggle {
+      position: relative;
+      height: 52px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 10px;
+      background: var(--surface);
+      box-shadow: 0 2px 12px var(--shadow);
+      display: flex;
+      padding: 4px;
+      cursor: pointer;
+      touch-action: pan-y;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Sliding pill background */
+    .toggle-pill {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: calc(50% - 4px);
+      height: calc(100% - 8px);
+      border-radius: calc(var(--radius-lg) - 4px);
+      background: linear-gradient(135deg, #FDF6E9 0%, #FBE8D3 100%);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  background 0.3s var(--ease-out);
+      z-index: 0;
+    }
+
+    .toggle.pm .toggle-pill {
+      transform: translateX(100%);
+      background: linear-gradient(135deg, #EDE8F2 0%, #DED4EA 100%);
+    }
+
+    /* Toggle buttons */
+    .toggle-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: calc(var(--radius-lg) - 4px);
+      transition: color 0.25s var(--ease-out);
+      position: relative;
+      z-index: 1;
+    }
+
+    .toggle-btn.active {
+      color: var(--text);
+    }
+
+    .toggle-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Sun/Moon icons */
+    .toggle-icon {
+      width: 18px;
+      height: 18px;
+      opacity: 0.6;
+      transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+    }
+
+    .toggle-btn.active .toggle-icon {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .toggle-icon.sun {
+      color: #E8A838;
+    }
+
+    .toggle-icon.moon {
+      color: #9B8AB8;
+    }
+
+    /* "Now" indicator dot */
+    .toggle-btn .now-dot {
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      width: 4px;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+      transition: transform 0.25s var(--ease-spring);
+    }
+
+    .toggle-btn.is-now:not(.active) .now-dot {
+      transform: translateX(-50%) scale(1);
+    }
+
+    /* Day Bar */
+    .day-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+      margin-bottom: 12px;
+      background: var(--surface);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 2px 8px var(--shadow);
+      position: relative;
+    }
+
+    .day-bar-pill {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: calc((100% - 8px) / 7);
+      height: calc(100% - 8px);
+      background: linear-gradient(135deg, rgba(196, 152, 141, 0.2) 0%, rgba(196, 152, 141, 0.35) 100%);
+      border-radius: calc(var(--radius-sm) - 1px);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 0;
+    }
+
+    .day-btn {
+      flex: 1;
+      padding: 12px 0;
+      border: none;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: color 0.25s var(--ease-out);
+      position: relative;
+      z-index: 1;
+    }
+
+    .day-btn.selected {
+      color: var(--text);
+    }
+
+    .day-btn .today-dot {
+      position: absolute;
+      bottom: 3px;
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      width: 4px;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+      transition: transform 200ms var(--ease-spring);
+    }
+
+    .day-btn.is-today:not(.selected) .today-dot {
+      transform: translateX(-50%) scale(1);
+    }
+
+    .day-btn:active {
+      transform: scale(0.94);
+    }
+
+    /* ========== CARD ========== */
+    .routine-card {
+      flex: 1;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 22px 22px 18px;
+      box-shadow: 0 4px 24px var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: fadeUp 450ms var(--ease-out);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Greeting */
+    .greeting {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--text-base);
+      font-weight: 400;
+      font-style: italic;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 14px;
+      letter-spacing: 0.01em;
+      transition: margin 350ms var(--ease-spring);
+    }
+
+    .greeting.compact {
+      margin-bottom: 4px;
+    }
+
+    /* Theme section (PM only) */
+    .theme-section {
+      text-align: center;
+      overflow: hidden;
+      transition: max-height 350ms var(--ease-spring),
+                  opacity 250ms var(--ease-out),
+                  margin 350ms var(--ease-spring);
+      max-height: 70px;
+      opacity: 1;
+      margin-bottom: 14px;
+    }
+
+    .theme-section.hidden {
+      max-height: 0;
+      opacity: 0;
+      margin-bottom: 0;
+    }
+
+    .routine-theme {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--text-xl);
+      font-weight: 500;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .routine-theme::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--accent-gold);
+      border-radius: 1px;
+      transform: rotate(45deg);
+    }
+
+    .routine-subtitle {
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+      margin-top: 3px;
+      font-style: italic;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: rgba(45, 41, 38, 0.06);
+      margin-bottom: 16px;
+      flex-shrink: 0;
+    }
+
+    /* ========== STEPS ========== */
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 8px 12px;
+      margin: 0 -12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(6px);
+      animation: stepIn 350ms var(--ease-out) forwards;
+      transition: background 150ms var(--ease-out);
+    }
+
+    .step:active {
+      background: rgba(45, 41, 38, 0.04);
+    }
+
+    @keyframes stepIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .step-num {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 26px;
+      font-weight: 500;
+      color: var(--accent);
+      min-width: 28px;
+      text-align: center;
+      line-height: 1;
+    }
+
+    .step-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .step-category {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    .step-product-wrapper {
+      overflow: hidden;
+      position: relative;
+      height: 1.3em;
+    }
+
+    .step-product {
+      font-size: var(--text-lg);
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.3;
+      position: absolute;
+      left: 0;
+      top: 0;
+      white-space: nowrap;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  opacity 0.3s var(--ease-out);
+    }
+
+    .step-product.current {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .step-product.alt {
+      transform: translateX(-30px);
+      opacity: 0;
+    }
+
+    /* When swiping, disable CSS transitions - JS controls */
+    .step.swiping .step-product {
+      transition: none;
+    }
+
+    .step-note {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-style: italic;
+      line-height: 1.3;
+    }
+
+    .step-swap-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--accent);
+      opacity: 0.85;
+      transition: opacity 0.2s var(--ease-out), transform 0.3s var(--ease-out);
+    }
+
+    .step-swap-hint.fading {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+
+    .step-swap-hint .arrow {
+      display: inline-block;
+      transition: transform 200ms var(--ease-spring);
+    }
+
+    .step.swiping {
+      transition: none;
+    }
+
+    .step.snap-complete,
+    .step.snap-back {
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  background 0.3s var(--ease-out);
+    }
+
+    .step.swipe-ready .step-swap-hint {
+      opacity: 1;
+    }
+
+    .step.swipe-ready .step-swap-hint .arrow {
+      transform: translateX(4px);
+    }
+
+    /* ========== MODAL ========== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(45, 41, 38, 0.5);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 300ms var(--ease-out), visibility 300ms;
+      z-index: 100;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-sheet {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      padding: 10px 24px 24px;
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+      transform: translateY(100%);
+      transition: transform 400ms cubic-bezier(0.32, 0.72, 0, 1);
+      z-index: 101;
+      max-height: 65vh;
+      overflow-y: auto;
+      box-shadow: 0 -8px 40px rgba(45, 41, 38, 0.15);
+    }
+
+    .modal-overlay.open .modal-sheet {
+      transform: translateY(0);
+    }
+
+    .modal-handle {
+      width: 36px;
+      height: 4px;
+      background: rgba(45, 41, 38, 0.12);
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+
+    /* Modal Header */
+    .modal-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-category {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .modal-product {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 2px;
+    }
+
+    .modal-tagline {
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* Icon Grid */
+    .modal-icons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .modal-icon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modal-icon-item.hidden {
+      display: none;
+    }
+
+    .modal-icon-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 200ms var(--ease-spring);
+    }
+
+    .modal-icon-item:active .modal-icon-circle {
+      transform: scale(0.92);
+    }
+
+    .modal-icon-svg {
+      width: 22px;
+      height: 22px;
+      color: var(--accent);
+    }
+
+    .modal-icon-label {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    /* Duration Badge */
+    .modal-duration {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-gold) 100%);
+      color: white;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .modal-duration.hidden {
+      display: none;
+    }
+
+    .modal-duration svg {
+      stroke: white;
+    }
+
+    /* Instruction */
+    .modal-instruction {
+      font-size: var(--text-base);
+      line-height: 1.5;
+      color: var(--text);
+      margin-bottom: 14px;
+      padding: 14px 16px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+    }
+
+    /* Tip */
+    .modal-tip {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      font-style: italic;
+    }
+
+    .modal-tip.hidden {
+      display: none;
+    }
+
+    .modal-tip-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-gold);
+      background: rgba(184, 151, 126, 0.15);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-style: normal;
+      flex-shrink: 0;
+    }
+
+    /* Warnings */
+    .modal-warnings {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .modal-warnings.hidden {
+      display: none;
+    }
+
+    .modal-warning-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: var(--text-sm);
+      color: var(--warning);
+      background: var(--warning-bg);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+    }
+
+    .modal-warning-item svg {
+      stroke: var(--warning);
+      flex-shrink: 0;
+    }
+
+    /* Optional steps */
+    .step.optional {
+      padding-left: 12px;
+      border-left: 2px dashed var(--optional);
+    }
+
+    .step.optional .step-num {
+      color: var(--optional);
+    }
+
+    .step.optional .step-category::after {
+      content: ' · if needed';
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      font-style: italic;
+    }
+
+    /* Content transition */
+    .routine-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .routine-content.switching .steps-list {
+      animation: contentFade 200ms var(--ease-out);
+    }
+
+    @keyframes contentFade {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="toggle" id="toggle">
+      <div class="toggle-pill"></div>
+      <button class="toggle-btn" id="amBtn" data-period="AM">
+        <svg class="toggle-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+        </svg>
+        morning
+        <span class="now-dot"></span>
+      </button>
+      <button class="toggle-btn" id="pmBtn" data-period="PM">
+        <svg class="toggle-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        evening
+        <span class="now-dot"></span>
+      </button>
+    </div>
+    <div class="day-bar" id="dayBar"></div>
+  </header>
+
+  <!-- Product Modal -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+
+      <!-- Header -->
+      <div class="modal-header">
+        <div class="modal-category" id="modalCategory">CLEANSE</div>
+        <div class="modal-product" id="modalProduct">RAIN Cleanser</div>
+        <div class="modal-tagline" id="modalTagline">oil cleanser · makeup melt</div>
+      </div>
+
+      <!-- Icon Grid -->
+      <div class="modal-icons" id="modalIcons">
+        <div class="modal-icon-item" id="iconAmount">
+          <div class="modal-icon-circle">
+            <svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2C12 2 6 8.5 6 13a6 6 0 0 0 12 0c0-4.5-6-11-6-11z"/>
+            </svg>
+          </div>
+          <span class="modal-icon-label">3-4 drops</span>
+        </div>
+        <div class="modal-icon-item" id="iconTiming">
+          <div class="modal-icon-circle">
+            <svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+          </div>
+          <span class="modal-icon-label">AM</span>
+        </div>
+        <div class="modal-icon-item" id="iconSurface">
+          <div class="modal-icon-circle">
+            <svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+              <path d="M8 12s1.5 2 4 2 4-2 4-2"/>
+            </svg>
+          </div>
+          <span class="modal-icon-label">damp skin</span>
+        </div>
+        <div class="modal-icon-item" id="iconRinse">
+          <div class="modal-icon-circle">
+            <svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2C12 2 6 8.5 6 13a6 6 0 0 0 12 0c0-4.5-6-11-6-11z"/>
+              <path d="M9 18l2 2 4-4"/>
+            </svg>
+          </div>
+          <span class="modal-icon-label">rinse</span>
+        </div>
+      </div>
+
+      <!-- Duration badge (if applicable) -->
+      <div class="modal-duration" id="modalDuration">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+        <span id="modalDurationText">30+ sec</span>
+      </div>
+
+      <!-- Instruction -->
+      <div class="modal-instruction" id="modalInstruction">
+        Massage on dry skin in circular motions for 30+ seconds, then remove with a warm washcloth.
+      </div>
+
+      <!-- Tip -->
+      <div class="modal-tip" id="modalTip">
+        <span class="modal-tip-label">tip</span>
+        <span id="modalTipText">Leave a light film for extra moisture</span>
+      </div>
+
+      <!-- Warnings -->
+      <div class="modal-warnings" id="modalWarnings">
+        <div class="modal-warning-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 9v4M12 17h.01"/>
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          </svg>
+          <span>Don't use with BHA</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="routine-card">
+    <div class="routine-content" id="routineContent">
+      <div class="greeting" id="greeting">good evening</div>
+
+      <div class="theme-section" id="themeSection">
+        <div class="routine-theme" id="routineTheme">Peptide Night</div>
+        <div class="routine-subtitle" id="routineSubtitle">smooth & plump</div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="steps-list" id="stepsList"></div>
+    </div>
+  </main>
+
+  <script>
+    const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    // Product database with all details
+    const PRODUCTS = {
+      "Water rinse or RAIN": {
+        fullName: "Water Rinse or RAIN Cleanser",
+        tagline: "gentle morning refresh",
+        amount: { value: "splash or 2-3 pumps", icon: "water" },
+        timing: ["AM"],
+        surface: "dry",
+        rinse: true,
+        duration: null,
+        instruction: "Splash water or massage RAIN on dry skin, wipe with cloth.",
+        warnings: [],
+        tip: "Use RAIN if feeling oily"
+      },
+      "RAIN Cleanser": {
+        fullName: "Good Medicine RAIN Replenishing Oil Cleanser",
+        tagline: "oil cleanser · makeup melt",
+        amount: { value: "4-6 pumps", icon: "pump" },
+        timing: ["PM"],
+        surface: "dry",
+        rinse: true,
+        duration: "30+ sec",
+        instruction: "Massage on dry skin in circular motions for 30+ seconds, then remove with a warm washcloth.",
+        warnings: [],
+        tip: "Leave a light film for extra moisture"
+      },
+      "Summer Fridays CC Me": {
+        fullName: "Summer Fridays CC Me Vitamin C Serum",
+        tagline: "brightening · texture",
+        amount: { value: "2-3 drops", icon: "drops" },
+        timing: ["AM"],
+        surface: "dry",
+        rinse: false,
+        duration: null,
+        instruction: "Apply to clean, dry skin before hydrating serums. Always follow with SPF.",
+        warnings: ["Don't use with TO Multi-Peptide"],
+        tip: "Let absorb before next step"
+      },
+      "Inkey List HA": {
+        fullName: "The Inkey List Hyaluronic Acid Serum",
+        tagline: "lightweight hydration",
+        amount: { value: "pea-size", icon: "pea" },
+        timing: ["AM", "PM"],
+        surface: "damp",
+        rinse: false,
+        duration: null,
+        instruction: "Apply to damp skin right after cleansing, before other serums.",
+        warnings: [],
+        tip: "Mist face first if skin is dry"
+      },
+      "TO HA 2% + B5": {
+        fullName: "The Ordinary Hyaluronic Acid 2% + B5",
+        tagline: "multi-weight hydration",
+        amount: { value: "3-4 drops", icon: "drops" },
+        timing: ["AM", "PM"],
+        surface: "damp",
+        rinse: false,
+        duration: null,
+        instruction: "Apply on slightly damp skin after cleansing, before thicker serums.",
+        warnings: [],
+        tip: "If tight/sticky, add more moisturizer on top"
+      },
+      "TO Barrier Support Serum": {
+        fullName: "The Ordinary Soothing & Barrier Support Serum",
+        tagline: "barrier rescue · redness relief",
+        amount: { value: "2-4 drops", icon: "drops" },
+        timing: ["AM", "PM"],
+        surface: "dry",
+        rinse: false,
+        duration: null,
+        instruction: "Apply after cleansing, before thicker serums and creams. Great after irritating treatments.",
+        warnings: ["Some suggest avoiding with strong Vitamin C"],
+        tip: "Perfect after BHA nights"
+      },
+      "Dr.Jart Ceramidin Cream": {
+        fullName: "Dr.Jart+ Ceramidin Skin Barrier Moisturizing Cream",
+        tagline: "ceramide barrier cream",
+        amount: { value: "nickel-size", icon: "coin" },
+        timing: ["AM", "PM"],
+        surface: "dry",
+        rinse: false,
+        duration: null,
+        instruction: "Apply as last serum step. Can go under sleeping mask at night.",
+        warnings: [],
+        tip: "Your desert-skin savior"
+      },
+      "Dr.Jart Ceramidin Eye": {
+        fullName: "Dr.Jart+ Ceramidin Eye Cream",
+        tagline: "hydrating eye barrier",
+        amount: { value: "rice-grain", icon: "tiny" },
+        timing: ["AM", "PM"],
+        surface: "dry",
+        rinse: false,
+        duration: null,
+        instruction: "Dab around orbital bone, gently tap to absorb. Apply before face moisturizer.",
+        warnings: [],
+        tip: "Use ring finger for gentlest pressure"
+      },
+      "SPF 30+": {
+        fullName: "Sunscreen SPF 30+",
+        tagline: "daily protection",
+        amount: { value: "2 finger-lengths", icon: "finger" },
+        timing: ["AM"],
+        surface: "dry",
+        rinse: false,
+        duration: null,
+        instruction: "Apply generously as final morning step. Reapply every 2 hours if outdoors.",
+        warnings: [],
+        tip: "Non-negotiable. Every. Single. Day."
+      },
+      "Paula's Choice 2% BHA": {
+        fullName: "Paula's Choice Skin Perfecting 2% BHA Liquid",
+        tagline: "pore clearing · texture",
+        amount: { value: "light layer", icon: "cotton" },
+        timing: ["PM"],
+        surface: "dry",
+        rinse: false,
+        duration: "wait 5-10 min",
+        instruction: "After cleansing, apply with fingers or cotton pad. Do NOT rinse. Wait before next step.",
+        warnings: ["Start 1-2x/week", "Not with scrubs same night", "Not with Multi-Peptide", "Always SPF next day"],
+        tip: "Less is more—overdoing causes damage"
+      },
+      "TO Multi-Peptide + HA": {
+        fullName: "The Ordinary Multi-Peptide + HA Serum",
+        tagline: "firming · smoothing",
+        amount: { value: "2-4 drops", icon: "drops" },
+        timing: ["PM"],
+        surface: "dry",
+        rinse: false,
+        duration: null,
+        instruction: "Apply after cleansing on non-acid nights, before creams and oils.",
+        warnings: ["NO acids (BHA)", "NO Vitamin C", "NO strong actives same routine"],
+        tip: "Peptide nights = gentle nights"
+      },
+      "Electric Sky Elixir": {
+        fullName: "Good Medicine ELECTRIC SKY Universal Elixir",
+        tagline: "finishing oil · glow",
+        amount: { value: "6-8 drops", icon: "drops" },
+        timing: ["PM"],
+        surface: "dry",
+        rinse: false,
+        duration: null,
+        instruction: "Press into skin after creams as final oil step. Can mix 1-2 drops into moisturizer.",
+        warnings: ["Patch test first", "Contains essential oils"],
+        tip: "A little goes a long way"
+      },
+      "Laneige Sleeping Mask": {
+        fullName: "LANEIGE Water Sleeping Mask",
+        tagline: "overnight hydration seal",
+        amount: { value: "thin layer", icon: "layer" },
+        timing: ["PM"],
+        surface: "dry",
+        rinse: true,
+        duration: "overnight",
+        instruction: "Apply as very last PM step after moisturizer. Sleep in it, rinse in morning.",
+        warnings: [],
+        tip: "2-3 nights per week or as needed"
+      },
+      "Honey Bee Mask": {
+        fullName: "Good Medicine HONEY BEE Revelation Mask",
+        tagline: "hydrating glow ritual",
+        amount: { value: "thin layer", icon: "layer" },
+        timing: ["PM"],
+        surface: "dry",
+        rinse: true,
+        duration: "10-20 min",
+        instruction: "Apply to clean, dry skin. Leave up to 20 minutes, then rinse with warm water.",
+        warnings: [],
+        tip: "Can use daily if skin loves it"
+      },
+      "SMUDGE Detox Mask": {
+        fullName: "Good Medicine SMUDGE Spirited Detox Mask",
+        tagline: "charcoal detox · pore purge",
+        amount: { value: "dime-size", icon: "pea" },
+        timing: ["PM"],
+        surface: "dry",
+        rinse: true,
+        duration: "3 min only",
+        instruction: "Mix with water to lotion texture, apply, relax 3 minutes MAX, then rinse thoroughly.",
+        warnings: ["Don't leave longer!", "Max 1x/week when dry"],
+        tip: "Mix 50/50 with Honey Bee to soften"
+      },
+      "Glow Recipe Dew Drops": {
+        fullName: "Glow Recipe Watermelon Glow Niacinamide Dew Drops",
+        tagline: "niacinamide glow serum",
+        amount: { value: "1-2 pumps", icon: "pump" },
+        timing: ["AM", "PM"],
+        surface: "dry",
+        rinse: false,
+        duration: null,
+        instruction: "As serum: before moisturizer. As highlighter: last step, pat on high points.",
+        warnings: ["Don't stack with other niacinamides"],
+        tip: "Choose this OR TO Niacinamide, not both"
+      },
+      "TO Niacinamide 10% + Zinc": {
+        fullName: "The Ordinary Niacinamide 10% + Zinc 1%",
+        tagline: "oil control · pores",
+        amount: { value: "few drops", icon: "drops" },
+        timing: ["AM", "PM"],
+        surface: "dry",
+        rinse: false,
+        duration: null,
+        instruction: "After cleansing, before other serums. Once daily max for dry skin.",
+        warnings: ["Separate from strong Vitamin C", "You have niacinamide in other products"],
+        tip: "Only if you need extra oil control"
+      },
+      "CLARITY Face Cream": {
+        fullName: "Good Medicine CLARITY Awakening Face Cream",
+        tagline: "botanical brightening",
+        amount: { value: "pea to nickel", icon: "pea" },
+        timing: ["AM", "PM"],
+        surface: "dry",
+        rinse: false,
+        duration: null,
+        instruction: "After serums, before oil. Layer under Ceramidin if very dry.",
+        warnings: ["Essential oils—patch test if sensitive"],
+        tip: "Mix with Electric Sky drops for boost"
+      }
+    };
+
+    const ROUTINES = {
+      AM: {
+        steps: [
+          { cat: "Cleanse", product: "Water rinse or RAIN", note: "Use RAIN if oily" },
+          { cat: "Vitamin C", product: "Summer Fridays CC Me", note: "Apply on dry skin" },
+          { cat: "Hydrate", product: "Inkey List HA", swap: "TO HA 2% + B5", note: "Pea-size, mist if dry" },
+          { cat: "Barrier", product: "TO Barrier Support Serum" },
+          { cat: "Moisturize", product: "Dr.Jart Ceramidin Cream" },
+          { cat: "Eyes", product: "Dr.Jart Ceramidin Eye" },
+          { cat: "Protect", product: "SPF 30+", note: "Non-negotiable!" }
+        ]
+      },
+      PM: {
+        Monday: {
+          theme: "BHA Night",
+          subtitle: "clear pores & texture",
+          steps: [
+            { cat: "Cleanse", product: "RAIN Cleanser" },
+            { cat: "Treatment", product: "Paula's Choice 2% BHA" },
+            { cat: "Hydrate", product: "Inkey List HA", swap: "TO HA 2% + B5" },
+            { cat: "Barrier", product: "TO Barrier Support Serum" },
+            { cat: "Moisturize", product: "Dr.Jart Ceramidin Cream" },
+            { cat: "Boost", product: "Laneige Sleeping Mask", optional: true, note: "If skin feels tight" }
+          ]
+        },
+        Tuesday: {
+          theme: "Repair Night",
+          subtitle: "hydration focus",
+          steps: [
+            { cat: "Cleanse", product: "RAIN Cleanser" },
+            { cat: "Hydrate", product: "Inkey List HA", swap: "TO HA 2% + B5" },
+            { cat: "Barrier", product: "TO Barrier Support Serum" },
+            { cat: "Moisturize", product: "Dr.Jart Ceramidin Cream" },
+            { cat: "Seal", product: "Laneige Sleeping Mask", note: "Seals everything in" }
+          ]
+        },
+        Wednesday: {
+          theme: "Peptide Night",
+          subtitle: "smooth & plump",
+          steps: [
+            { cat: "Cleanse", product: "RAIN Cleanser" },
+            { cat: "Treatment", product: "TO Multi-Peptide + HA", note: "Keep separate from Vit C & BHA" },
+            { cat: "Moisturize", product: "Dr.Jart Ceramidin Cream" },
+            { cat: "Boost", product: "Electric Sky Elixir", optional: true, note: "6-8 drops" }
+          ]
+        },
+        Thursday: {
+          theme: "Repair Night",
+          subtitle: "hydration focus",
+          steps: [
+            { cat: "Cleanse", product: "RAIN Cleanser" },
+            { cat: "Hydrate", product: "Inkey List HA", swap: "TO HA 2% + B5" },
+            { cat: "Barrier", product: "TO Barrier Support Serum" },
+            { cat: "Moisturize", product: "Dr.Jart Ceramidin Cream" },
+            { cat: "Seal", product: "Laneige Sleeping Mask", optional: true }
+          ]
+        },
+        Friday: {
+          theme: "BHA Night",
+          subtitle: "clear pores & texture",
+          steps: [
+            { cat: "Cleanse", product: "RAIN Cleanser" },
+            { cat: "Treatment", product: "Paula's Choice 2% BHA", note: "Skip if dry/sensitive" },
+            { cat: "Hydrate", product: "Inkey List HA", swap: "TO HA 2% + B5" },
+            { cat: "Barrier", product: "TO Barrier Support Serum" },
+            { cat: "Moisturize", product: "Dr.Jart Ceramidin Cream" },
+            { cat: "Boost", product: "Laneige Sleeping Mask", swap: "Electric Sky Elixir", optional: true }
+          ]
+        },
+        Saturday: {
+          theme: "Peptide Night",
+          subtitle: "smooth & plump",
+          steps: [
+            { cat: "Cleanse", product: "RAIN Cleanser" },
+            { cat: "Treatment", product: "TO Multi-Peptide + HA", note: "Keep separate from Vit C & BHA" },
+            { cat: "Moisturize", product: "Dr.Jart Ceramidin Cream" },
+            { cat: "Boost", product: "Electric Sky Elixir", optional: true, note: "6-8 drops" }
+          ]
+        },
+        Sunday: {
+          theme: "Mask Night",
+          subtitle: "glow ritual",
+          steps: [
+            { cat: "Cleanse", product: "RAIN Cleanser" },
+            { cat: "Mask", product: "Honey Bee Mask", note: "Rinse after 10-15 min" },
+            { cat: "Hydrate", product: "Inkey List HA", swap: "TO HA 2% + B5" },
+            { cat: "Barrier", product: "TO Barrier Support Serum" },
+            { cat: "Moisturize", product: "Dr.Jart Ceramidin Cream" },
+            { cat: "Seal", product: "Laneige Sleeping Mask", swap: "Electric Sky Elixir", optional: true }
+          ]
+        }
+      }
+    };
+
+    // State
+    const now = new Date();
+    const todayIndex = now.getDay();
+    const currentHour = now.getHours();
+    const nowPeriod = currentHour < 12 ? 'AM' : 'PM';
+
+    let selectedDay = DAYS[todayIndex];
+    let selectedPeriod = nowPeriod;
+    let swaps = {};
+    try {
+      swaps = JSON.parse(localStorage.getItem('skincare-swaps') || '{}');
+    } catch (e) {}
+
+    function getGreeting() {
+      if (currentHour < 12) return 'good morning';
+      if (currentHour < 17) return 'good afternoon';
+      return 'good evening';
+    }
+
+    function init() {
+      document.getElementById('greeting').textContent = getGreeting();
+      renderDayBar();
+      renderToggle();
+      updateDisplay(false);
+    }
+
+    function renderDayBar() {
+      const bar = document.getElementById('dayBar');
+      const selectedIndex = DAYS.indexOf(selectedDay);
+
+      bar.innerHTML = `
+        <div class="day-bar-pill" id="dayPill"></div>
+        ${DAYS_SHORT.map((d, i) => `
+          <button class="day-btn ${DAYS[i] === selectedDay ? 'selected' : ''} ${i === todayIndex ? 'is-today' : ''}"
+                  data-index="${i}"
+                  onclick="setDay('${DAYS[i]}')">
+            ${d}
+            <span class="today-dot"></span>
+          </button>
+        `).join('')}
+      `;
+
+      // Position the pill
+      updateDayPill(selectedIndex, false);
+    }
+
+    function updateDayPill(index, animate = true) {
+      const pill = document.getElementById('dayPill');
+      if (!pill) return;
+
+      // Each day button is 1/7 of the bar width
+      // Transform by index * 100% of the pill width
+      const translateX = index * 100;
+
+      if (!animate) {
+        pill.style.transition = 'none';
+        pill.style.transform = `translateX(${translateX}%)`;
+        // Force reflow
+        void pill.offsetHeight;
+        pill.style.transition = '';
+      } else {
+        pill.style.transform = `translateX(${translateX}%)`;
+      }
+    }
+
+    // Toggle Setup
+    const toggle = document.getElementById('toggle');
+    const amBtn = document.getElementById('amBtn');
+    const pmBtn = document.getElementById('pmBtn');
+
+    function renderToggle() {
+      toggle.classList.toggle('pm', selectedPeriod === 'PM');
+
+      amBtn.classList.toggle('active', selectedPeriod === 'AM');
+      pmBtn.classList.toggle('active', selectedPeriod === 'PM');
+      amBtn.classList.toggle('is-now', nowPeriod === 'AM');
+      pmBtn.classList.toggle('is-now', nowPeriod === 'PM');
+    }
+
+    // Click handlers
+    amBtn.addEventListener('click', () => setPeriod('AM'));
+    pmBtn.addEventListener('click', () => setPeriod('PM'));
+
+    function setDay(day) {
+      if (day === selectedDay) return;
+
+      const newIndex = DAYS.indexOf(day);
+      selectedDay = day;
+
+      // Update button states
+      document.querySelectorAll('.day-btn').forEach((btn, i) => {
+        btn.classList.toggle('selected', DAYS[i] === day);
+      });
+
+      // Animate the pill
+      updateDayPill(newIndex, true);
+
+      updateDisplay(true);
+    }
+
+    function setPeriod(period) {
+      if (period === selectedPeriod) return;
+      selectedPeriod = period;
+      renderToggle();
+      updateDisplay(true);
+    }
+
+    function updateDisplay(animate) {
+      const themeSection = document.getElementById('themeSection');
+      const content = document.getElementById('routineContent');
+
+      if (animate) {
+        content.classList.add('switching');
+        setTimeout(() => content.classList.remove('switching'), 200);
+      }
+
+      let routine, showTheme = false;
+
+      if (selectedPeriod === 'AM') {
+        routine = ROUTINES.AM;
+        showTheme = false;
+      } else {
+        routine = ROUTINES.PM[selectedDay];
+        showTheme = true;
+      }
+
+      // Animate theme section
+      const greeting = document.getElementById('greeting');
+      if (showTheme) {
+        themeSection.classList.remove('hidden');
+        greeting.classList.add('compact');
+        document.getElementById('routineTheme').textContent = routine.theme;
+        document.getElementById('routineSubtitle').textContent = routine.subtitle;
+      } else {
+        themeSection.classList.add('hidden');
+        greeting.classList.remove('compact');
+      }
+
+      // Render steps
+      const stepsList = document.getElementById('stepsList');
+      stepsList.innerHTML = routine.steps.map((step, i) => {
+        const swapKey = `${selectedPeriod}-${step.cat}-${step.product}`;
+        const isSwapped = swaps[swapKey];
+        const currentProduct = isSwapped && step.swap ? step.swap : step.product;
+        const altProduct = isSwapped ? step.product : step.swap;
+
+        return `
+          <div class="step ${step.optional ? 'optional' : ''}"
+               style="animation-delay: ${animate ? i * 35 : 0}ms"
+               data-index="${i}"
+               data-swappable="${step.swap ? 'true' : 'false'}"
+               data-swap-key="${swapKey}"
+               data-current="${currentProduct}"
+               data-alt="${altProduct || ''}">
+            <div class="step-num">${i + 1}</div>
+            <div class="step-content">
+              <div class="step-category">${step.cat}</div>
+              <div class="step-product-wrapper">
+                <span class="step-product current">${currentProduct}</span>
+                ${step.swap ? `<span class="step-product alt">${altProduct}</span>` : ''}
+              </div>
+              ${step.note ? `<div class="step-note">${step.note}</div>` : ''}
+              ${step.swap ? `<div class="step-swap-hint"><span class="arrow">→</span> swipe for ${altProduct}</div>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Attach touch handlers
+      attachStepHandlers();
+    }
+
+    // Touch/swipe handling
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let currentSwipeStep = null;
+    let swipeProgress = 0;
+
+    function attachStepHandlers() {
+      document.querySelectorAll('.step').forEach(step => {
+        step.addEventListener('touchstart', handleTouchStart, { passive: true });
+        step.addEventListener('touchmove', handleTouchMove, { passive: false });
+        step.addEventListener('touchend', handleTouchEnd);
+        step.addEventListener('click', handleStepClick);
+      });
+    }
+
+    function handleTouchStart(e) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      currentSwipeStep = e.currentTarget;
+      swipeProgress = 0;
+    }
+
+    const SWIPE_THRESHOLD = 100;
+    const SWIPE_MAX = 300;
+
+    function handleTouchMove(e) {
+      if (!currentSwipeStep) return;
+
+      const deltaX = e.touches[0].clientX - touchStartX;
+      const deltaY = e.touches[0].clientY - touchStartY;
+
+      // Only handle right swipes (positive deltaX)
+      if (deltaX > 10 && deltaX > Math.abs(deltaY)) {
+        e.preventDefault();
+        const swappable = currentSwipeStep.dataset.swappable === 'true';
+        if (swappable) {
+          currentSwipeStep.classList.add('swiping');
+
+          // Calculate progress 0-1
+          swipeProgress = Math.min(deltaX / SWIPE_MAX, 1);
+
+          // Subtle card shift (reduced from before)
+          const cardShift = swipeProgress * 20;
+          currentSwipeStep.style.transform = `translateX(${cardShift}px)`;
+
+          // Progressive background gradient
+          const bgOpacity = 0.05 + (swipeProgress * 0.25);
+          currentSwipeStep.style.background = `linear-gradient(90deg, rgba(196, 152, 141, ${bgOpacity * 0.5}) 0%, rgba(196, 152, 141, ${bgOpacity}) 100%)`;
+
+          // Animate both product texts
+          const currentEl = currentSwipeStep.querySelector('.step-product.current');
+          const altEl = currentSwipeStep.querySelector('.step-product.alt');
+
+          if (currentEl) {
+            // Current slides out to right, fades out
+            const currentShift = swipeProgress * 50;
+            const currentOpacity = 1 - swipeProgress;
+            currentEl.style.transform = `translateX(${currentShift}px)`;
+            currentEl.style.opacity = currentOpacity;
+          }
+
+          if (altEl) {
+            // Alt slides in from left, fades in (starts at -30, ends at 0)
+            const altShift = -30 + (swipeProgress * 30);
+            const altOpacity = swipeProgress;
+            altEl.style.transform = `translateX(${altShift}px)`;
+            altEl.style.opacity = altOpacity;
+          }
+
+          // Update hint arrow
+          const arrow = currentSwipeStep.querySelector('.step-swap-hint .arrow');
+          if (arrow) {
+            arrow.style.transform = `translateX(${swipeProgress * 6}px)`;
+            arrow.style.opacity = 1 - swipeProgress * 0.5;
+          }
+
+          // Show "ready" state when past 40%
+          if (swipeProgress >= 0.4) {
+            currentSwipeStep.classList.add('swipe-ready');
+          } else {
+            currentSwipeStep.classList.remove('swipe-ready');
+          }
+        }
+      }
+    }
+
+    function handleTouchEnd(e) {
+      if (!currentSwipeStep) return;
+
+      const swappable = currentSwipeStep.dataset.swappable === 'true';
+      const stepEl = currentSwipeStep;
+
+      // Calculate final progress from touch position
+      const deltaX = e.changedTouches[0].clientX - touchStartX;
+      const deltaY = e.changedTouches[0].clientY - touchStartY;
+      const finalProgress = Math.min(Math.max(deltaX, 0) / SWIPE_MAX, 1);
+
+      if (!swappable || deltaX < 10 || deltaX < Math.abs(deltaY)) {
+        // Reset and bail
+        stepEl.classList.remove('swiping', 'swipe-ready');
+        stepEl.style.transform = '';
+        stepEl.style.background = '';
+        const currentEl = stepEl.querySelector('.step-product.current');
+        const altEl = stepEl.querySelector('.step-product.alt');
+        if (currentEl) currentEl.style = '';
+        if (altEl) altEl.style = '';
+        currentSwipeStep = null;
+        swipeProgress = 0;
+        return;
+      }
+
+      const currentEl = stepEl.querySelector('.step-product.current');
+      const altEl = stepEl.querySelector('.step-product.alt');
+      const hintEl = stepEl.querySelector('.step-swap-hint');
+      const arrow = stepEl.querySelector('.step-swap-hint .arrow');
+
+      // Re-enable transitions (keep current positions via inline styles)
+      stepEl.classList.remove('swiping');
+      if (arrow) arrow.style = '';
+
+      // Commit swap if past 40% progress
+      if (finalProgress >= 0.4) {
+        const swapKey = stepEl.dataset.swapKey;
+        const stepIndex = parseInt(stepEl.dataset.index);
+        const routine = selectedPeriod === 'AM' ? ROUTINES.AM : ROUTINES.PM[selectedDay];
+        const step = routine.steps[stepIndex];
+
+        // Toggle swap state
+        swaps[swapKey] = !swaps[swapKey];
+        try { localStorage.setItem('skincare-swaps', JSON.stringify(swaps)); } catch (e) {}
+
+        const isSwapped = swaps[swapKey];
+        const newCurrent = isSwapped && step.swap ? step.swap : step.product;
+        const newAlt = isSwapped ? step.product : step.swap;
+
+        // Animate TO final positions (from current inline positions)
+        stepEl.style.transform = '';
+        stepEl.style.background = '';
+
+        if (currentEl) {
+          currentEl.style.transform = 'translateX(50px)';
+          currentEl.style.opacity = '0';
+        }
+        if (altEl) {
+          altEl.style.transform = 'translateX(0)';
+          altEl.style.opacity = '1';
+        }
+
+        // After spring animation, swap the content
+        setTimeout(() => {
+          stepEl.classList.remove('swipe-ready');
+
+          if (currentEl && altEl) {
+            // Disable transitions for instant reset
+            currentEl.style.transition = 'none';
+            altEl.style.transition = 'none';
+
+            // Swap text content
+            currentEl.textContent = newCurrent;
+            altEl.textContent = newAlt;
+
+            // Reset positions to default state
+            currentEl.style.transform = 'translateX(0)';
+            currentEl.style.opacity = '1';
+            altEl.style.transform = 'translateX(-30px)';
+            altEl.style.opacity = '0';
+
+            // Force reflow so changes apply immediately
+            void currentEl.offsetHeight;
+
+            // Re-enable transitions (keep transform/opacity inline)
+            currentEl.style.transition = '';
+            altEl.style.transition = '';
+          }
+
+          // Animate hint: fade out, swap text, fade in
+          if (hintEl) {
+            hintEl.classList.add('fading');
+            setTimeout(() => {
+              hintEl.innerHTML = `<span class="arrow">→</span> swipe for ${newAlt}`;
+              hintEl.classList.remove('fading');
+            }, 200);
+          }
+
+          // Update data attributes
+          stepEl.dataset.current = newCurrent;
+          stepEl.dataset.alt = newAlt;
+        }, 400);
+
+      } else {
+        // Snap back to original positions
+        stepEl.style.transform = '';
+        stepEl.style.background = '';
+
+        if (currentEl) {
+          currentEl.style.transform = 'translateX(0)';
+          currentEl.style.opacity = '1';
+        }
+        if (altEl) {
+          altEl.style.transform = 'translateX(-30px)';
+          altEl.style.opacity = '0';
+        }
+
+        setTimeout(() => {
+          stepEl.classList.remove('swipe-ready');
+          // Keep inline styles, just ensure transitions work for next swipe
+          if (currentEl) currentEl.style.transition = '';
+          if (altEl) altEl.style.transition = '';
+        }, 400);
+      }
+
+      currentSwipeStep = null;
+      swipeProgress = 0;
+    }
+
+    function handleStepClick(e) {
+      // Don't open modal if we just swiped
+      const deltaX = Math.abs(e.clientX - touchStartX);
+      if (deltaX > 20) return;
+
+      const index = parseInt(e.currentTarget.dataset.index);
+      openModal(index);
+    }
+
+    // Icon SVGs
+    const ICONS = {
+      // Amount icons
+      drops: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2C12 2 6 8.5 6 13a6 6 0 0 0 12 0c0-4.5-6-11-6-11z"/>
+      </svg>`,
+      pump: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="8" y="10" width="8" height="11" rx="1"/>
+        <path d="M10 10V7a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v3"/>
+        <path d="M12 5V2"/>
+        <path d="M10 2h4"/>
+      </svg>`,
+      pea: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="6"/>
+        <path d="M12 12m-2 0a2 2 0 1 0 4 0 2 2 0 1 0-4 0" fill="currentColor" stroke="none" opacity="0.3"/>
+      </svg>`,
+      coin: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="8"/>
+        <circle cx="12" cy="12" r="4" opacity="0.4"/>
+      </svg>`,
+      tiny: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="3"/>
+      </svg>`,
+      finger: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 21V11M12 11l-3 3M12 11l3 3"/>
+        <path d="M8 7V4M16 7V4"/>
+      </svg>`,
+      cotton: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="8"/>
+        <path d="M8 12h8"/>
+      </svg>`,
+      layer: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 4L3 9l9 5 9-5-9-5z"/>
+        <path d="M3 14l9 5 9-5" opacity="0.5"/>
+      </svg>`,
+      water: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2C12 2 6 8.5 6 13a6 6 0 0 0 12 0c0-4.5-6-11-6-11z"/>
+        <path d="M8 13a4 4 0 0 0 4 4" opacity="0.5"/>
+      </svg>`,
+      // Timing icons
+      sun: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>`,
+      moon: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>`,
+      sunmoon: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="8" cy="12" r="3"/>
+        <path d="M8 5v1M8 18v1M3 12H2M5.5 8.5L4.8 7.8M5.5 15.5l-.7.7"/>
+        <path d="M19 12.79A6 6 0 1 1 13.21 7 4.5 4.5 0 0 0 19 12.79z"/>
+      </svg>`,
+      // Surface icons
+      dry: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="8"/>
+        <path d="M15 9l-6 6M15 15L9 9" opacity="0.4"/>
+      </svg>`,
+      damp: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M8 4C8 4 5 8 5 10.5a3 3 0 0 0 6 0C11 8 8 4 8 4z"/>
+        <path d="M16 8C16 8 13 12 13 14.5a3 3 0 0 0 6 0C19 12 16 8 16 8z"/>
+        <path d="M10 15C10 15 7 19 7 21.5a3 3 0 0 0 6 0c0-2.5-3-6.5-3-6.5z" opacity="0.5"/>
+      </svg>`,
+      // Rinse icons
+      rinse: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2C12 2 6 8.5 6 13a6 6 0 0 0 12 0c0-4.5-6-11-6-11z"/>
+        <path d="M14 17l2 2 3-3"/>
+      </svg>`,
+      norinse: `<svg class="modal-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2C12 2 6 8.5 6 13a6 6 0 0 0 12 0c0-4.5-6-11-6-11z"/>
+        <path d="M8 12h8" opacity="0.4"/>
+      </svg>`
+    };
+
+    // Modal state
+    let currentModalStep = null;
+    let currentRoutine = null;
+
+    function openModal(stepIndex) {
+      const routine = selectedPeriod === 'AM' ? ROUTINES.AM : ROUTINES.PM[selectedDay];
+      const step = routine.steps[stepIndex];
+      const swapKey = `${selectedPeriod}-${step.cat}-${step.product}`;
+      const isSwapped = swaps[swapKey];
+      const displayProduct = isSwapped && step.swap ? step.swap : step.product;
+
+      // Look up product info
+      const productInfo = PRODUCTS[displayProduct] || {
+        fullName: displayProduct,
+        tagline: step.cat.toLowerCase(),
+        amount: { value: "as needed", icon: "pea" },
+        timing: [selectedPeriod],
+        surface: "dry",
+        rinse: false,
+        duration: null,
+        instruction: step.note || "Apply as directed.",
+        warnings: [],
+        tip: null
+      };
+
+      currentModalStep = { step, stepIndex, swapKey, isSwapped };
+      currentRoutine = routine;
+
+      // Populate header
+      document.getElementById('modalCategory').textContent = step.cat;
+      document.getElementById('modalProduct').textContent = displayProduct;
+      document.getElementById('modalTagline').textContent = productInfo.tagline || '';
+
+      // Populate icon grid
+      const iconsContainer = document.getElementById('modalIcons');
+
+      // Amount icon
+      const amountIcon = document.getElementById('iconAmount');
+      amountIcon.querySelector('.modal-icon-circle').innerHTML = ICONS[productInfo.amount.icon] || ICONS.pea;
+      amountIcon.querySelector('.modal-icon-label').textContent = productInfo.amount.value;
+
+      // Timing icon
+      const timingIcon = document.getElementById('iconTiming');
+      const timingValue = productInfo.timing;
+      if (timingValue.includes('AM') && timingValue.includes('PM')) {
+        timingIcon.querySelector('.modal-icon-circle').innerHTML = ICONS.sunmoon;
+        timingIcon.querySelector('.modal-icon-label').textContent = 'AM + PM';
+      } else if (timingValue.includes('AM')) {
+        timingIcon.querySelector('.modal-icon-circle').innerHTML = ICONS.sun;
+        timingIcon.querySelector('.modal-icon-label').textContent = 'AM';
+      } else {
+        timingIcon.querySelector('.modal-icon-circle').innerHTML = ICONS.moon;
+        timingIcon.querySelector('.modal-icon-label').textContent = 'PM';
+      }
+
+      // Surface icon
+      const surfaceIcon = document.getElementById('iconSurface');
+      surfaceIcon.querySelector('.modal-icon-circle').innerHTML = productInfo.surface === 'damp' ? ICONS.damp : ICONS.dry;
+      surfaceIcon.querySelector('.modal-icon-label').textContent = productInfo.surface === 'damp' ? 'damp skin' : 'dry skin';
+
+      // Rinse icon
+      const rinseIcon = document.getElementById('iconRinse');
+      rinseIcon.querySelector('.modal-icon-circle').innerHTML = productInfo.rinse ? ICONS.rinse : ICONS.norinse;
+      rinseIcon.querySelector('.modal-icon-label').textContent = productInfo.rinse ? 'rinse off' : 'leave on';
+
+      // Duration badge
+      const durationEl = document.getElementById('modalDuration');
+      if (productInfo.duration) {
+        durationEl.classList.remove('hidden');
+        document.getElementById('modalDurationText').textContent = productInfo.duration;
+      } else {
+        durationEl.classList.add('hidden');
+      }
+
+      // Instruction
+      document.getElementById('modalInstruction').textContent = productInfo.instruction;
+
+      // Tip
+      const tipEl = document.getElementById('modalTip');
+      if (productInfo.tip) {
+        tipEl.classList.remove('hidden');
+        document.getElementById('modalTipText').textContent = productInfo.tip;
+      } else {
+        tipEl.classList.add('hidden');
+      }
+
+      // Warnings
+      const warningsEl = document.getElementById('modalWarnings');
+      if (productInfo.warnings && productInfo.warnings.length > 0) {
+        warningsEl.classList.remove('hidden');
+        warningsEl.innerHTML = productInfo.warnings.map(w => `
+          <div class="modal-warning-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 9v4M12 17h.01"/>
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            </svg>
+            <span>${w}</span>
+          </div>
+        `).join('');
+      } else {
+        warningsEl.classList.add('hidden');
+      }
+
+      document.getElementById('modalOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(event) {
+      if (event && event.target !== event.currentTarget) return;
+      document.getElementById('modalOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+      currentModalStep = null;
+    }
+
+    // Drawer pull-down to close
+    let drawerStartY = 0;
+    let drawerCurrentY = 0;
+    let isDraggingDrawer = false;
+
+    const modalSheet = document.querySelector('.modal-sheet');
+    const modalOverlay = document.getElementById('modalOverlay');
+
+    modalSheet.addEventListener('touchstart', (e) => {
+      // Only start drag from top area (handle + header region)
+      const touch = e.touches[0];
+      const rect = modalSheet.getBoundingClientRect();
+      const touchY = touch.clientY - rect.top;
+
+      // Allow drag from top 80px of modal
+      if (touchY < 80) {
+        isDraggingDrawer = true;
+        drawerStartY = touch.clientY;
+        drawerCurrentY = 0;
+        modalSheet.style.transition = 'none';
+      }
+    }, { passive: true });
+
+    modalSheet.addEventListener('touchmove', (e) => {
+      if (!isDraggingDrawer) return;
+
+      const touch = e.touches[0];
+      drawerCurrentY = touch.clientY - drawerStartY;
+
+      // Only allow dragging down (positive Y)
+      if (drawerCurrentY > 0) {
+        modalSheet.style.transform = `translateY(${drawerCurrentY}px)`;
+
+        // Fade overlay as we drag
+        const progress = Math.min(drawerCurrentY / 150, 1);
+        modalOverlay.style.background = `rgba(45, 41, 38, ${0.5 * (1 - progress * 0.5)})`;
+      }
+    }, { passive: true });
+
+    modalSheet.addEventListener('touchend', () => {
+      if (!isDraggingDrawer) return;
+      isDraggingDrawer = false;
+
+      modalSheet.style.transition = '';
+      modalOverlay.style.background = '';
+
+      // If dragged more than 80px, close the modal
+      if (drawerCurrentY > 80) {
+        modalSheet.style.transform = '';
+        modalOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+      } else {
+        // Snap back
+        modalSheet.style.transform = '';
+      }
+
+      drawerCurrentY = 0;
+    });
+
+    init();
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>
